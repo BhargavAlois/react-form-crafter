@@ -1,0 +1,36 @@
+name: Build and Publish to npm
+
+on:
+  push:
+    branches:
+      - master # Replace 'main' with your default branch name if different
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18 # Use the version of Node.js your package requires
+          cache: 'npm'
+
+      # Step 3: Install dependencies
+      - name: Install Dependencies
+        run: npm install
+
+      # Step 4: Build the package
+      - name: Build the Package
+        run: npm run build # Ensure "build" script is defined in package.json
+
+      # Step 5: Publish to npm
+      - name: Publish to npm
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
