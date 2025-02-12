@@ -23,7 +23,7 @@ jobs:
 
       # Step 3: Configure npm authentication
       - name: Configure npm authentication
-        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_AUTH_TOKEN }}" > ~/.npmrc
 
       # Step 4: Install dependencies
       - name: Install dependencies
