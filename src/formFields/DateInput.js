@@ -2,7 +2,7 @@ import React from 'react'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import { format, parse } from 'date-fns'
-import { Calendar, CalendarIcon, CalendarRangeIcon, CalendarX2Icon } from 'lucide-react'
+import { CalendarIcon } from 'lucide-react'
 
 export default function DateInput(props) {
   const {
