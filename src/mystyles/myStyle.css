@@ -1,0 +1,87 @@
+  .form-group {
+    margin-bottom: 1rem;
+  }
+  
+  .form-label {
+    display: inline-block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+    font-size: 1rem;
+  }
+  
+  textarea.form-control {
+    height: auto;
+    resize: vertical;
+  }
+  
+  select.form-control {
+    height: auto;
+  }
+
+  .primaryButton {
+    outline: none ;
+    color: white ;
+    border: 1px solid #ff5100 ; 
+    background-color: #ff5100 ; 
+    font-weight: 500 ;
+    border-radius: 5px ;
+    display: flex ;
+    justify-content: center ; 
+    align-items: center ;
+  }
+  
+  .primaryButton:hover {
+    outline: none;
+    color: white; 
+    background-color: #ff5100; 
+    border: 1px solid #ff5100; 
+  }
+  
+  .primaryButton.striped {
+    background-color: white; 
+    border-color: #ff5100; 
+    color: #ff5100; 
+  }
+  
+  .primaryButton.striped:hover {
+    color: white; 
+    background-color: #ff5100; 
+    border-color: #ff5100; 
+  }
+  
+  .text-danger{
+    color: #e55353 !important;
+  }
+
+  p.text-danger{
+    font-size: 0.875rem !important;
+    margin-bottom: 0 !important;
+  }
+
+  input::placeholder {
+    font-size: 0.875rem; 
+  }
+
+  input{
+    font-size: 0.875rem !important;
+  }
+
+  .react-datepicker-wrapper {
+    width: 100% !important;
+  }
+
+  .date-picker-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .calendar-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 18px;
+    color: gray;
+  }
