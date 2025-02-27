@@ -18,7 +18,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18 # Adjust to your package requirements
+          node-version: 20.8.1 # Adjust to your package requirements
           cache: 'npm'
 
       # Step 3: Configure npm authentication
