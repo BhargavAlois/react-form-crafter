@@ -291,7 +291,7 @@ uiSchema: {
   }
 ```
 Layout key divides fields into several divisions. className key can be used to apply classes to individual section. (Below html code demonstrates row and col-4 classes applied to sections by use of schema).
-titleClass key can be used to give classes to title
+titleClass key can be used to give classes to title.
 
 ```HTML
 <div class="w-100 row justify-content-around">
