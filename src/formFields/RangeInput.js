@@ -14,7 +14,8 @@ export default function RangeInput(props) {
     handleChange,
     fieldName,
     isRequired,
-    showLabel
+    showLabel,
+    fieldRefs
   } = props
   const min = field.minimum || 0
   const max = field.maximum || 100
@@ -31,6 +32,7 @@ export default function RangeInput(props) {
       </label>}
       <input
         type="range"
+        ref={(element) => (fieldRefs.current[fieldName] = element)}
         name={fieldName}
         className={`${fieldClass} form-range ${errors[fieldName] ? 'is-invalid' : ''}`}
         value={rangeValue}

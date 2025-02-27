@@ -14,7 +14,8 @@ export default function EmailInput(props) {
     handleChange,
     fieldName,
     isRequired,
-    showLabel
+    showLabel,
+    fieldRefs
   } = props
   return (
     <div key={fieldName} className={`${layoutClass} `}>
@@ -24,6 +25,7 @@ export default function EmailInput(props) {
       </label>}
       <input
         type="text"
+        ref={(element) => (fieldRefs.current[fieldName] = element)}
         name={fieldName}
         className={`${fieldClass} ${errors[fieldName] ? 'is-invalid' : ''}`}
         value={formData[fieldName] || ''}

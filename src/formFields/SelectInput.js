@@ -14,7 +14,8 @@ export default function SelectInput(props) {
     handleChange,
     fieldName,
     isRequired,
-    showLabel
+    showLabel,
+    fieldRefs
   } = props
 
   const { oneOf, enum: enumValues, enumNames } = field
@@ -56,6 +57,7 @@ export default function SelectInput(props) {
       </label>}
       <select
         name={fieldName}
+        ref={(element) => (fieldRefs.current[fieldName] = element)}
         className={`form-select ${errors[fieldName] ? 'is-invalid' : ''}`}
         value={formData[fieldName] || ''}
         onChange={(e) => handleChange(fieldName, e.target.value)}

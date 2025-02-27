@@ -14,7 +14,8 @@ export default function TextArea(props) {
     handleChange,
     fieldName,
     isRequired,
-    showLabel
+    showLabel,
+    fieldRefs
   } = props
   const rows = uiFieldSchema?.['ui:options']?.rows
   const cols = uiFieldSchema?.['ui:options']?.cols
@@ -27,6 +28,7 @@ export default function TextArea(props) {
       </label>}
       <textarea
         className={`${fieldClass} ${errors[fieldName] ? 'is-invalid' : ''}`}
+        ref={(element) => (fieldRefs.current[fieldName] = element)}
         name={fieldName}
         value={formData[fieldName] || ''}
         onChange={(e) => handleChange(fieldName, e.target.value)}

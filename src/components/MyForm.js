@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { forwardRef, useState, useEffect, useRef, useImperativeHandle } from 'react'
 import DefaultTemplate from '../templates/DefaultTemplate'
 import { format, parseISO } from 'date-fns'
 import ContentTemplate from '../templates/ContentTemplate'
-import '../mystyles/myStyle.css'
 
-export default function MyForm(props) {
+const MyForm = forwardRef((props, ref) => {
   const {
     schema,
     uiSchema = {},
@@ -17,91 +16,90 @@ export default function MyForm(props) {
     onError,
     formData: prefilledFormData,
   } = props
-  const [formData, setFormData] = useState(prefilledFormData)
   const defaultData = useRef({})
+  const isInitialized = useRef(false)
+  if (!isInitialized.current) {
+    defaultData.current = initializeDefaultData()
+    isInitialized.current = true
+  }
+  const [formData, setFormData] = useState(flattenData({...defaultData.current, ...prefilledFormData} || {}));
   const [errors, setErrors] = useState({})
   const templates = props?.templates
   const templateName = uiSchema?.['template']
-  const isInitialized = useRef(false)
+  const fieldRefs = useRef({});    // To focus the input fields which are empty when performing validation
 
   let MyTemplate
   if (templateName) {
     MyTemplate = templates[templateName]
   }
 
-  const normalizeFieldName = (fieldName) => {
-    const parts = fieldName.split('.')
-    return parts[parts.length - 1] // Return the last part of the path
-  }
+  // const normalizeFieldName = (fieldName) => {
+  //   const parts = fieldName.split('.')
+  //   return parts[parts.length - 1] // Return the last part of the path
+  // }
 
-  const normalizeData = async (schema, data) => {
-    const processProperties = async (properties, data, parentKey = '') => {
-      const result = {}
-
-      for (const [fieldName, fieldSchema] of Object.entries(properties || {})) {
-        const fullPath = parentKey ? `${parentKey}.${fieldName}` : fieldName
-        let fieldValue = data?.[fieldName]
-
-        if (fieldSchema.type === 'string' && fieldSchema.format === 'date') {
-          const fieldUiSchema = getSchema(fieldName, uiSchema)
-          const displayFormat = fieldUiSchema?.['ui:options']?.format || fieldUiSchema?.['ui-options']?.format || 'yyyy-MM-dd'
-          try {
-            result[fieldName] = format(parseISO(fieldValue), displayFormat)
-          } catch {
-            if (data[fieldName]) {
-              result[fieldName] = fieldValue // Fallback to raw value
-            }
-          }
-        } else if (fieldSchema.type === 'object' && fieldSchema.properties) {
-          result[fieldName] = await processProperties(
+  const normalizeData = async (schema, data, uiSchema = {}) => {
+    const processProperties = async (schemaProperties, inputData, parentKey = '') => {
+      const result = {};
+  
+      for (const [key, value] of Object.entries(inputData || {})) {
+        const fieldSchema = schemaProperties?.[key];
+  
+        if (fieldSchema?.type === "object" && fieldSchema.properties) {
+          // Recursively process nested objects, preserving structure
+          result[key] = await processProperties(
             fieldSchema.properties,
-            data[fieldName] || {},
-            fullPath,
-          )
+            value,
+            `${parentKey}${key}.`
+          );
+        } else if (fieldSchema?.type === "string" && fieldSchema.format === "date") {
+          // Handle date formatting based on UI schema
+          const fieldUiSchema = uiSchema[`${parentKey}${key}`] || {};
+          const displayFormat =
+            fieldUiSchema?.["ui:options"]?.format ||
+            fieldUiSchema?.["ui-options"]?.format ||
+            "yyyy-MM-dd";
+  
+          try {
+            result[key] = format(parseISO(value), displayFormat);
+          } catch {
+            result[key] = value; // Fallback to raw value if formatting fails
+          }
         } else {
-          if (fieldValue !== undefined && fieldValue !== null) {
-            result[fieldName] = fieldValue
+          // Directly assign other fields
+          result[key] = value;
+        }
+      }
+  
+      return result;
+    };
+  
+    // Call the recursive processor
+    return processProperties(schema?.properties, data);
+  };
+
+  function flattenData(data) {
+    const result = {};
+  
+    function flatten(obj, parentKey = "") {
+      for (const key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          const newKey = parentKey ? `${parentKey}.${key}` : key;
+  
+          if (typeof obj[key] === "object" && !Array.isArray(obj[key])) {
+            flatten(obj[key], newKey);
+          } else {
+            result[newKey] = obj[key];
           }
         }
       }
-
-      return result
     }
-
-    // Process and normalize schema-defined fields
-    const structuredData = await processProperties(schema.properties, data || {})
-
-    // Identify extra fields not in schema
-    const schemaKeys = new Set(Object.keys(structuredData))
-    const extraFields = Object.fromEntries(
-      Object.entries(data || {}).filter(([key]) => !schemaKeys.has(key)),
-    )
-
-    // Merge structured schema-based data with extra fields (extra fields stay at the root level)
-    const finalData = { ...structuredData, ...extraFields }
-
-    return finalData
+  
+    flatten(data);
+    return result;
   }
 
-  const flattenData = (data, parentKey = '') => {
-    let result = {}
-
-    Object.entries(data || {}).forEach(([key, value]) => {
-      const newKey = parentKey ? key : key // Keep just the field name as key
-
-      if (Array.isArray(value)) {
-        result[newKey] = value
-      } else if (typeof value === 'object' && value !== null) {
-        result = { ...result, ...flattenData(value, newKey) }
-      } else {
-        result[newKey] = value
-      }
-    })
-
-    return result
-  }
-
-  const initializeDefaultData = () => {
+  function initializeDefaultData() {
     const extractDefaults = (schema) => {
       const defaults = {}
 
@@ -121,23 +119,48 @@ export default function MyForm(props) {
       return defaults
     }
 
-    let defaultData = extractDefaults(schema)
-    defaultData = flattenData(defaultData)
+    const defaultData = extractDefaults(schema)
     return defaultData // Encode URLs
   }
 
+  const convertToNestedStructure = (dottedData) => {
+    const nestedData = {};
+  
+    Object.entries(dottedData).forEach(([key, value]) => {
+      const keys = key.split("."); // Split the dotted key into parts
+      let current = nestedData;
+  
+      keys.forEach((part, index) => {
+        if (!current[part]) {
+          // Create a nested object if it doesn't exist
+          current[part] = {};
+        }
+  
+        // If it's the last key, assign the value
+        if (index === keys.length - 1) {
+          current[part] = value;
+        }
+  
+        // Move deeper into the nested structure
+        current = current[part];
+      });
+    });
+  
+    return nestedData;
+  };  
+
   useEffect(() => {
     if (!isInitialized.current) {
-      const flattenedDefaultData = initializeDefaultData()
-      defaultData.current = flattenedDefaultData
+      defaultData.current = initializeDefaultData()
       isInitialized.current = true
     }
 
     const processPrefilledData = async () => {
-      let flattenedPrefilledData = flattenData(prefilledFormData)
-      const mergedData = { ...defaultData.current, ...flattenedPrefilledData }
-      const normalizedData = await normalizeData(schema, mergedData)
-      setFormData(normalizedData)
+      const mergedData = { ...defaultData.current, ...prefilledFormData }
+      const normalizedData = (await normalizeData(schema, mergedData, uiSchema));
+      //Convert merged data to the format : formData.info.firstName=value;
+      const flatData = flattenData(normalizedData); //Converting data into dotted notation
+      setFormData(flatData);
     }
 
     processPrefilledData()
@@ -261,10 +284,23 @@ export default function MyForm(props) {
         }
       }
 
+      //array validations
+      if(value && fieldSchema.type === 'array')
+      {
+        if (Array.isArray(value)) {
+          const hasEmptyField = value.some((item) => !item || item === '');
+      
+          if (hasEmptyField) {
+            errors.push(`One or more fields in the ${fieldTitle} are empty.`);
+          }
+        }
+      }
+
       // File validations
       const uiOptions = uiSchema[fieldName]?.['ui:options'] || {}
       if (uiOptions.accept && value) {
         let fileType
+        let fileSize
 
         if (typeof value === 'string' && value.startsWith('data:')) {
           const mimeTypeMatch = value.match(/data:(.*?);/)
@@ -273,19 +309,30 @@ export default function MyForm(props) {
         // Case 2: File object (from file input)
         else if (value instanceof File || value instanceof Blob) {
           fileType = value.type
+          fileSize = value.size
         }
-        // console.log('File type : ', fileType)
         if (fileType && !uiOptions.accept.includes(fileType)) {
           errors.push(
             `The selected file type (${fileType}) is not supported.`,
             // `${fieldTitle} must be one of the accepted file types: ${uiOptions.accept.join(', ')}`,
           )
         }
+
+        if (uiOptions.size && fileSize) {
+          const maxSizeInBytes = uiOptions.size * 1024 * 1024;
+          if (fileSize > maxSizeInBytes) {
+            errors.push(
+              `The selected file size (${(fileSize / (1024 * 1024)).toFixed(
+                2
+              )} MB) exceeds the maximum allowed size of ${uiOptions.size} MB.`
+            );
+          }
+        }
       }
 
       if (errors.length > 0) {
-        const normalizedFieldName = normalizeFieldName(fullPath)
-        formErrors[normalizedFieldName] = errors
+        // const normalizedFieldName = normalizeFieldName(fullPath)
+        formErrors[fullPath] = errors
       }
     }
 
@@ -293,8 +340,8 @@ export default function MyForm(props) {
     const validateObject = (objectSchema, parentPath = '') => {
       Object.entries(objectSchema.properties || {}).forEach(([fieldName, fieldSchema]) => {
         const fullPath = parentPath ? `${parentPath}.${fieldName}` : fieldName // Construct the full path
-        const normalizedFieldName = normalizeFieldName(fullPath)
-        const value = formData?.[normalizedFieldName] // Use the full path to access the value
+        // const normalizedFieldName = normalizeFieldName(fullPath)
+        const value = formData?.[fullPath] // Use the full path to access the value
 
         if (fieldSchema.type === 'object') {
           // Recursively validate nested objects
@@ -309,6 +356,17 @@ export default function MyForm(props) {
     // Start validation from root schema
     validateObject(schema)
     setErrors(formErrors)
+
+    if (Object.keys(formErrors).length > 0) {
+      const firstErrorField = Object.keys(formErrors)[0];
+      const fieldElement = fieldRefs.current[firstErrorField];
+      if (fieldElement) {
+        fieldElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        fieldElement.focus();
+      }
+      return false;
+    }
+    
     return Object.keys(formErrors).length === 0
   }
 
@@ -325,42 +383,6 @@ export default function MyForm(props) {
     // console.log('Error occurred!')
   }
 
-  const transformFormData = (schema, flatData) => {
-    const buildNestedData = (schemaProperties, flatData, parentKey = '') => {
-      const nestedData = {} // Initialize with only schema-defined fields
-
-      Object.entries(schemaProperties || {}).forEach(([key, value]) => {
-        const fullPath = parentKey ? `${parentKey}.${key}` : key
-
-        if (value.type === 'object' && value.properties) {
-          // Recursively build nested objects
-          nestedData[key] = buildNestedData(value.properties, flatData, fullPath)
-        } else {
-          // Map flatData to the structured schema-defined fields
-          if (flatData.hasOwnProperty(fullPath)) {
-            nestedData[key] = flatData[fullPath] // Use full path key if exists
-          } else if (flatData.hasOwnProperty(key)) {
-            nestedData[key] = flatData[key] // Fallback to direct key match
-          }
-        }
-      })
-
-      return nestedData
-    }
-
-    // Create structured data as per schema
-    const structuredData = buildNestedData(schema.properties, flatData)
-
-    // Identify extra fields (not in schema)  //This implementation was necessary as some fields were being filled like this : (eg. PhoneNumber-> +971 +971 1234567890)
-    const schemaKeys = new Set(Object.keys(structuredData))
-    const extraFields = Object.fromEntries(
-      Object.entries(flatData).filter(([key]) => !schemaKeys.has(key)),
-    )
-
-    // Merge structured schema-based data with extra fields (extra fields stay at the root level)
-    return { ...structuredData, ...extraFields }
-  }
-
   const handleSubmit = (e) => {
     if (e) e.preventDefault()
 
@@ -372,8 +394,8 @@ export default function MyForm(props) {
       }
 
       //Transforming data into nesting format specified in schema
-      const transformedData = transformFormData(schema, formData)
-      const data = { formData: transformedData }
+      const nestedData = convertToNestedStructure(formData)
+      const data = { formData: nestedData }
 
       if (onSubmit) {
         onSubmit(data, e)
@@ -393,6 +415,7 @@ export default function MyForm(props) {
   }
 
   const handleReset = (event) => {
+    console.log("Inside handle reset")
     setFormData({});
     if(onReset)
     {
@@ -430,8 +453,8 @@ export default function MyForm(props) {
     }
 
     //Transforming data into nesting format specified in schema
-    const transformedData = transformFormData(schema, updatedData)
-    const data = { formData: transformedData }
+    const nestedData = convertToNestedStructure(updatedData)
+    const data = { formData: nestedData }
 
     if (onChange) {
       onChange(data)
@@ -442,6 +465,11 @@ export default function MyForm(props) {
       [fieldName]: '',
     }))
   }
+
+  useImperativeHandle(
+    ref,
+    () => ({handleSubmit, handleReset})
+  )
 
   const submitBtnOptions = {
     ...uiSchema?.['ui:submitButtonOptions'],
@@ -467,6 +495,7 @@ export default function MyForm(props) {
       onChange={handleChange}
       onSuccess={onSuccess}
       requiredFields={requiredFields}
+      fieldRefs={fieldRefs}
     />
   )
 
@@ -495,4 +524,6 @@ export default function MyForm(props) {
       resetBtnOptions={resetBtnOptions}
     />
   )
-}
+});
+
+export default MyForm;

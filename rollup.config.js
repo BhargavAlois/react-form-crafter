@@ -10,7 +10,7 @@ export default defineConfig({
         {
             dir: "dist",
             format: "es", 
-            name: "test-jsf2",
+            name: "react-form-crafter",
             exports: "default"
         }
     ],

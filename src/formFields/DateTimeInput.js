@@ -14,7 +14,8 @@ export default function DateTimeInput(props) {
     handleChange,
     fieldName,
     isRequired,
-    showLabel
+    showLabel,
+    fieldRefs
   } = props
   return (
     <div key={fieldName} className={`${layoutClass} `}>
@@ -24,6 +25,7 @@ export default function DateTimeInput(props) {
       </label>}
       <input
         type="datetime-local"
+        ref={(element) => (fieldRefs.current[fieldName] = element)}
         value={formData[fieldName] || ''}
         onChange={(e) => handleChange(fieldName, e.target.value)}
         className={`${fieldClass} ${errors[fieldName] ? 'is-invalid' : ''}`}

@@ -1,5 +1,5 @@
 {
-  "name": "test-jsf2",
+  "name": "react-form-crafter",
   "version": "1.0.0",
   "description": "A flexible and easy-to-use React package for generating dynamic forms based on JSON schemas.",
   "main": "dist/index.js",

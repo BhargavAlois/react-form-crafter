@@ -14,7 +14,8 @@ export default function YearInput(props) {
     handleChange,
     fieldName,
     isRequired,
-    showLabel
+    showLabel,
+    fieldRefs
   } = props
   return (
     <div key={fieldName} className={`${layoutClass} `}>
@@ -24,6 +25,7 @@ export default function YearInput(props) {
       </label>}
       <input
         type="number"
+        ref={(element) => (fieldRefs.current[fieldName] = element)}
         value={formData[fieldName] || ''}
         onChange={(e) => handleChange(fieldName, e.target.value)}
         min="1900"

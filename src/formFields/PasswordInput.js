@@ -15,7 +15,8 @@ export default function PasswordInput(props) {
     handleChange,
     fieldName,
     isRequired,
-    showLabel
+    showLabel,
+    fieldRefs
   } = props
 
   const [isPasswordVisible, setIsPasswordVisible] = useState(false)
@@ -26,13 +27,16 @@ export default function PasswordInput(props) {
 
   return (
     <div key={fieldName} className={`${layoutClass} mb-3`}>
-      {(title || fieldName) && (showLabel) && <label className="form-label">
-        {title || fieldName}
-        {isRequired && <span>*</span>}
-      </label>}
+      {(title || fieldName) && showLabel && (
+        <label className="form-label">
+          {title || fieldName}
+          {isRequired && <span>*</span>}
+        </label>
+      )}
       <div className="input-group has-validation">
         <input
           type={isPasswordVisible ? 'text' : 'password'}
+          ref={(element) => (fieldRefs.current[fieldName] = element)}
           name={fieldName}
           className={`${fieldClass} form-control ${errors[fieldName] ? 'is-invalid' : ''}`}
           value={formData[fieldName] || ''}

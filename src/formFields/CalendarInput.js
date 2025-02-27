@@ -14,7 +14,8 @@ export default function CalendarInput(props) {
     handleChange,
     fieldName,
     isRequired,
-    showLabel
+    showLabel,
+    fieldRefs
   } = props
 
   return (
@@ -25,6 +26,7 @@ export default function CalendarInput(props) {
       </label>}
       <input
         type="date"
+        ref={(element) => (fieldRefs.current[fieldName] = element)}
         value={formData[fieldName] || ''}
         onChange={(e) => handleChange(fieldName, e.target.value)}
         className={`${fieldClass} ${errors[fieldName] ? 'is-invalid' : ''}`}

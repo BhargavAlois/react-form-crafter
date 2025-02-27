@@ -14,7 +14,8 @@ export default function TextInput(props) {
     handleChange,
     fieldName,
     isRequired,
-    showLabel
+    showLabel,
+    fieldRefs,
   } = props
   return (
     <div key={fieldName} className={`${layoutClass} `}>
@@ -25,6 +26,7 @@ export default function TextInput(props) {
       <input
         type="text"
         className={`${fieldClass} ${errors[fieldName] ? 'is-invalid' : ''}`}
+        ref={(element) => (fieldRefs.current[fieldName] = element)}
         name={fieldName}
         value={formData[fieldName] || ''}
         onChange={(e) => handleChange(fieldName, e.target.value)}

@@ -14,7 +14,8 @@ export default function FileInput(props) {
     handleChange,
     fieldName,
     isRequired,
-    showLabel
+    showLabel,
+    fieldRefs
   } = props
 
   const value = formData[fieldName];
@@ -71,6 +72,7 @@ export default function FileInput(props) {
       </label>}
       <input
         type="file"
+        ref={(element) => (fieldRefs.current[fieldName] = element)}
         onChange={(e) => handleFileChange(fieldName, e)}
         className={`${fieldClass} ${errors[fieldName] ? 'is-invalid' : ''}`}
       />

@@ -13,6 +13,7 @@ export default function ContentTemplate({
   onError,
   onSubmit,
   requiredFields = [],
+  fieldRefs,
 }) {
   const getDeepValue = (obj, path) => {
     return path.split('.').reduce((acc, part) => acc && acc[part], obj)
@@ -21,6 +22,10 @@ export default function ContentTemplate({
   const normalizeFieldName = (fieldName) => {
     const parts = fieldName.split('.')
     return parts[parts.length - 1] // Return the last part of the path
+  }
+
+  const showSchemaInvalidError = (fieldName) => {
+    return (<p className="text-danger mt-2 mb-2"> Unsupported field schema for field {fieldName} </p>)
   }
 
   const getFieldSchemaByName = (schema, fieldName) => {
@@ -53,16 +58,13 @@ export default function ContentTemplate({
     const { title, enum: enumValues, oneOf, format, type } = field
     fieldPath = fieldPath ? `${fieldPath}.${fieldName}` : fieldName
     const uiFieldSchema = getDeepValue(uiSchema, fieldPath) || {}
-    const uiOptions = uiFieldSchema?.['ui:options'] || uiFieldSchema?.['ui-options']
-    const divClassName =
-      uiFieldSchema['ui:className'] ||
-      uiFieldSchema['ui:classNames'] ||
-      uiFieldSchema['classNames'] ||
-      uiOptions?.classNames
+    const uiOptions = uiFieldSchema?.['ui:options']
+    const divClassName = uiFieldSchema?.['className']
     const divClass = divClassName ? `${divClassName}` : ''
     const layoutClass = divClass ? `form-group ${divClass}` : 'form-group'
     const widget = uiFieldSchema['ui:widget'] || format || type || 'string'
-    const fieldClass = 'form-control'
+    const optionsClassName = uiOptions?.className
+    const fieldClass = `form-control ${optionsClassName ? optionsClassName : ''}`
     const normalizedFieldName = normalizeFieldName(fieldName)
     const isRequired = requiredFields.includes(fieldName)
     const showLabel = uiOptions?.label !== undefined ? uiOptions?.label : true
@@ -70,7 +72,7 @@ export default function ContentTemplate({
 
     // Implementation of handleDefaultFieldChange where only target value is accepted as parameter (for custom widgets and fields only)
     const handleDefaultFieldChange = (value) => {
-      handleChange(normalizedFieldName, value)
+      handleChange(fieldPath, value)
     }
 
     if (field.type === 'object' && field.properties) {
@@ -96,36 +98,28 @@ export default function ContentTemplate({
           </div>
         </div>
       )
-    } else if (fields) {
-      if (uiFieldSchema['ui:field']) {
-        const Component = fields?.[uiFieldSchema?.['ui:field']]
+    } else if (uiFieldSchema['ui:field']) {
+      const Component =
+        typeof uiFieldSchema['ui:field'] === 'function'
+          ? uiFieldSchema['ui:field']
+          : fields
+            ? fields[uiFieldSchema['ui:field']]
+            : null
+
+      if (Component) {
         return (
           <div className={`${layoutClass}`}>
             <Component
               key={fieldName}
               uiSchema={uiFieldSchema}
               onChange={handleDefaultFieldChange}
-              value={formData[normalizedFieldName]}
+              value={formData[fieldPath]}
               onSubmit={onSubmit}
               options={uiOptions}
             />
           </div>
         )
       }
-    } else if (uiFieldSchema['ui:field']) {
-      const Component = uiFieldSchema['ui:field']
-      return (
-        <div className={`${layoutClass}`}>
-          <Component
-            key={fieldName}
-            uiSchema={uiFieldSchema}
-            onChange={handleDefaultFieldChange}
-            value={normalizedFieldName}
-            onSubmit={onSubmit}
-            options={uiOptions}
-          />
-        </div>
-      )
     }
 
     const inputFields = {
@@ -170,26 +164,21 @@ export default function ContentTemplate({
           uiFieldSchema={uiFieldSchema}
           errors={errors}
           handleChange={handleChange}
-          fieldName={normalizedFieldName}
+          fieldName={fieldPath}
           fieldClass={fieldClass}
           title={title}
           layoutClass={layoutClass}
           isRequired={isRequired}
           showLabel={showLabel}
           onSubmit={onSubmit}
+          fieldRefs={fieldRefs}
         />
       )
     } else {
-      let CustomWidget
-      if (widgets) {
-        CustomWidget = widgets[widget]
-      }
-      if (!CustomWidget && uiFieldSchema?.['ui:widget']) {
-        CustomWidget = uiFieldSchema?.['ui:widget']
-      }
+      const CustomWidget = typeof widget === 'function' ? widget : widgets ? widgets[widget] : null
       if (CustomWidget) {
         return (
-          <div key={fieldName} className={`${layoutClass} m-0`}>
+          <div key={fieldName} className={`${layoutClass}`}>
             {showLabel && field?.title && (
               <label className="form-label">
                 {title}
@@ -199,16 +188,16 @@ export default function ContentTemplate({
             <CustomWidget
               schema={field}
               uiSchema={uiFieldSchema}
-              fieldName={normalizedFieldName}
-              value={formData[normalizedFieldName]}
+              fieldName={fieldPath}
+              value={formData[fieldPath]}
               onChange={handleDefaultFieldChange}
-              errors={errors[normalizedFieldName]}
+              errors={errors[fieldPath]}
               onSubmit={onSubmit}
               placeholder={uiFieldSchema?.['ui:placeholder']}
               options={uiOptions}
             />
-            {errors[normalizedFieldName] &&
-              errors[normalizedFieldName].map((error, index) => (
+            {errors[fieldPath] &&
+              errors[fieldPath].map((error, index) => (
                 <p
                   key={index}
                   className="text-danger"
@@ -219,6 +208,8 @@ export default function ContentTemplate({
               ))}
           </div>
         )
+      } else {
+        return showSchemaInvalidError(fieldName);
       }
     }
   }
@@ -230,7 +221,7 @@ export default function ContentTemplate({
       // Fallback to normal rendering when layout is not provided
       return Object.keys(schema.properties || {}).map((fieldName, index) => {
         const field = getFieldSchemaByName(schema, fieldName)
-        return field ? renderField(field, fieldName) : null
+        return field ? renderField(field, fieldName) : showSchemaInvalidError(fieldName);
       })
     }
 
@@ -262,7 +253,7 @@ export default function ContentTemplate({
                   </div>
                 )
               }
-              console.warn(`Unknown field type: ${fieldPathOrSection}`)
+              return showSchemaInvalidError(fieldName);
             })}
           </div>
         </div>

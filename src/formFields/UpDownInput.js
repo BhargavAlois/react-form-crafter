@@ -14,7 +14,8 @@ export default function UpDownInput(props) {
     handleChange,
     fieldName,
     isRequired,
-    showLabel
+    showLabel,
+    fieldRefs
   } = props
   return (
     <div key={fieldName} className={`${layoutClass} `}>
@@ -24,6 +25,7 @@ export default function UpDownInput(props) {
       </label>}
       <input
         type="number"
+        ref={(element) => (fieldRefs.current[fieldName] = element)}
         className={`${fieldClass} ${errors[fieldName] ? 'is-invalid' : ''}`}
         name={fieldName}
         value={formData[fieldName] || ''}

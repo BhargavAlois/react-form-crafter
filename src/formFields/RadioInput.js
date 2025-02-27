@@ -14,7 +14,8 @@ export default function RadioInput(props) {
     handleChange,
     fieldName,
     isRequired,
-    showLabel
+    showLabel,
+    fieldRefs
   } = props
 
   const { oneOf, enum: enumValues, enumNames } = field
@@ -25,6 +26,7 @@ export default function RadioInput(props) {
       <div key={index} className="form-check">
         <input
           type="radio"
+          ref={(element) => (fieldRefs.current[fieldName] = element)}
           className={`${fieldClass} ${errors[fieldName] ? 'is-invalid' : ''}`}
           name={fieldName}
           value={value}
@@ -75,10 +77,12 @@ export default function RadioInput(props) {
 
   return (
     <div key={fieldName} className={`${layoutClass}`}>
-      {(title || fieldName) && (showLabel) && <label className="form-label">
-        {title || fieldName}
-        {isRequired && <span>*</span>}
-      </label>}
+      {(title || fieldName) && showLabel && (
+        <label className="form-label">
+          {title || fieldName}
+          {isRequired && <span>*</span>}
+        </label>
+      )}
       <div className={`form-check ${isColumnLayout ? 'd-flex flex-column' : 'd-flex flex-row'}`}>
         {(enumNames && enumValues && renderEnumNamesOption(enumValues, enumNames)) ||
           (enumValues && renderEnumOptions(enumValues)) ||

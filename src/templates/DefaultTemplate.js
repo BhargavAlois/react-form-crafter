@@ -2,10 +2,10 @@ import React from 'react'
 
 export default function MainTemplate(props) {
   const { schema, content, onSubmit, onReset, submitBtnOptions, resetBtnOptions } = props
-  const submitBtnClass = submitBtnOptions?.props?.className || submitBtnOptions?.props?.classNames || 'primaryButton'
+  const submitBtnClass = submitBtnOptions?.props?.className || submitBtnOptions?.props?.classNames || "defaultButton"
   const hidden = submitBtnOptions?.hide || false
 
-  const resetBtnClass = resetBtnOptions?.props?.className || resetBtnOptions?.props?.classNames || 'primaryButton'
+  const resetBtnClass = resetBtnOptions?.props?.className || resetBtnOptions?.props?.classNames || 'defaultButton'
   const showClear = resetBtnOptions?.show || false
 
   return (
@@ -25,19 +25,19 @@ export default function MainTemplate(props) {
         style={{ overflow: 'auto' }}
       >
         {content}
-        <div className={`mt-3 ${showClear ? 'd-flex gap-3' : 'd-flex justify-content-center'}`}>
+        <div className={`mt-3 w-100 ${showClear ? 'd-flex gap-3' : 'd-flex'} justify-content-center`}>
           <button
             type="submit"
+            {...submitBtnOptions?.props}
             className={`${hidden ? 'invisible' : 'visible'} btn ${submitBtnClass}`}
-            disabled={submitBtnOptions?.props?.disabled}
           >
             {submitBtnOptions?.submitText || 'Submit'}
           </button>
           {showClear && (
             <button
               type="reset"
+              {...resetBtnOptions?.props}
               className={`btn ${resetBtnClass}`}
-              disabled={resetBtnOptions?.props?.disabled}
             >
               {resetBtnOptions?.clearText || 'Clear'}
             </button>
