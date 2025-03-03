@@ -66,7 +66,7 @@ export default App;
 
 The `schema` defines the structure of the form fields.
 
-The `uiSchema` customizes the appearance and behavior of the form elements.
+The `uiSchema` customizes the appearance and behavior of the form elements
 
 ```javascript
 {
