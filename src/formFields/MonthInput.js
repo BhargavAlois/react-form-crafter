@@ -7,8 +7,6 @@ export default function MonthInput(props) {
     formData,
     errors,
     title,
-    field,
-    uiFieldSchema,
     layoutClass,
     fieldClass,
     handleChange,

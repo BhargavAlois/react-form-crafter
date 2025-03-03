@@ -7,8 +7,6 @@ export default function SelectInput(props) {
     formData,
     errors,
     title,
-    field,
-    uiFieldSchema,
     fieldClass,
     layoutClass,
     handleChange,
@@ -18,7 +16,7 @@ export default function SelectInput(props) {
     fieldRefs
   } = props
 
-  const { oneOf, enum: enumValues, enumNames } = field
+  const { oneOf, enum: enumValues, enumNames } = schema
 
   const renderEnumOptions = (enumValues) => {
     return enumValues.map((value, index) => (
@@ -61,12 +59,12 @@ export default function SelectInput(props) {
         className={`form-select ${errors[fieldName] ? 'is-invalid' : ''}`}
         value={formData[fieldName] || ''}
         onChange={(e) => handleChange(fieldName, e.target.value)}
-        placeholder={uiFieldSchema?.['ui:placeholder']}
+        placeholder={uiSchema?.['ui:placeholder']}
       >
-        <option value="">{uiFieldSchema?.['ui:placeholder'] || "Select an option"}</option>
+        <option value="">{uiSchema?.['ui:placeholder'] || "Select an option"}</option>
         {(enumNames && enumValues && renderEnumNamesOption(enumValues, enumNames)) ||
           (enumValues && renderEnumOptions(enumValues)) ||
-          (field?.items?.enum && renderEnumOptions(field?.items?.enum)) ||
+          (schema?.items?.enum && renderEnumOptions(schema?.items?.enum)) ||
           (oneOf && renderOneOfOptions(oneOf))}
       </select>
       {errors[fieldName] &&

@@ -8,8 +8,6 @@ export default function PasswordInput(props) {
     formData,
     errors,
     title,
-    field,
-    uiFieldSchema,
     fieldClass,
     layoutClass,
     handleChange,
@@ -41,7 +39,7 @@ export default function PasswordInput(props) {
           className={`${fieldClass} form-control ${errors[fieldName] ? 'is-invalid' : ''}`}
           value={formData[fieldName] || ''}
           onChange={(e) => handleChange(fieldName, e.target.value)}
-          placeholder={uiFieldSchema['ui:placeholder']}
+          placeholder={uiSchema['ui:placeholder']}
         />
         <button
           type="button"

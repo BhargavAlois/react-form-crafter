@@ -12,6 +12,7 @@ export default function ContentTemplate({
   onSuccess,
   onError,
   onSubmit,
+  onReset,
   requiredFields = [],
   fieldRefs,
 }) {
@@ -111,10 +112,13 @@ export default function ContentTemplate({
           <div className={`${layoutClass}`}>
             <Component
               key={fieldName}
+              schema={field}
               uiSchema={uiFieldSchema}
               onChange={handleDefaultFieldChange}
               value={formData[fieldPath]}
               onSubmit={onSubmit}
+              onReset={onReset}
+              errors={errors[fieldPath]}
               options={uiOptions}
             />
           </div>
@@ -157,11 +161,9 @@ export default function ContentTemplate({
       return (
         <Component
           key={fieldName}
-          schema={schema}
-          uiSchema={uiSchema}
+          schema={field}
+          uiSchema={uiFieldSchema}
           formData={formData}
-          field={field}
-          uiFieldSchema={uiFieldSchema}
           errors={errors}
           handleChange={handleChange}
           fieldName={fieldPath}
@@ -186,6 +188,7 @@ export default function ContentTemplate({
               </label>
             )}
             <CustomWidget
+              key={fieldName}
               schema={field}
               uiSchema={uiFieldSchema}
               fieldName={fieldPath}
@@ -193,6 +196,7 @@ export default function ContentTemplate({
               onChange={handleDefaultFieldChange}
               errors={errors[fieldPath]}
               onSubmit={onSubmit}
+              onReset={onReset}
               placeholder={uiFieldSchema?.['ui:placeholder']}
               options={uiOptions}
             />

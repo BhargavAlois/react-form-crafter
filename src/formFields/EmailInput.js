@@ -7,8 +7,6 @@ export default function EmailInput(props) {
     formData,
     errors,
     title,
-    field,
-    uiFieldSchema,
     layoutClass,
     fieldClass,
     handleChange,
@@ -30,7 +28,7 @@ export default function EmailInput(props) {
         className={`${fieldClass} ${errors[fieldName] ? 'is-invalid' : ''}`}
         value={formData[fieldName] || ''}
         onChange={(e) => handleChange(fieldName, e.target.value)}
-        placeholder={uiFieldSchema['ui:placeholder']}
+        placeholder={uiSchema['ui:placeholder']}
       />
       {errors[fieldName] &&
         errors[fieldName].map((error, index) => (

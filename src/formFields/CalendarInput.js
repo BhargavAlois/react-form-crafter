@@ -8,7 +8,6 @@ export default function CalendarInput(props) {
     errors,
     title,
     field,
-    uiFieldSchema,
     layoutClass,
     fieldClass,
     handleChange,

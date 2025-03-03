@@ -1,7 +1,7 @@
-const ButtonWidget = ({uiFieldSchema}) => {
-    const value = uiFieldSchema?.['ui:options']?.['value'];
-    const onClick = uiFieldSchema?.['ui:options']?.['onClick'];
-    const btnClass = uiFieldSchema?.['classNames'];
+const ButtonWidget = ({uiSchema}) => {
+    const value = uiSchema?.['ui:options']?.['value'];
+    const onClick = uiSchema?.['ui:options']?.['onClick'];
+    const btnClass = uiSchema?.['classNames'];
 
     return (
         <button type="button" className={btnClass} onClick={onClick}>

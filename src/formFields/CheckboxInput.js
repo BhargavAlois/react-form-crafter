@@ -2,12 +2,11 @@ import React from 'react'
 
 export default function CheckboxInput(props) {
   const {
-    schemaModel,
+    schema,
+    uiSchema,
     formData,
     errors,
     title,
-    field,
-    uiFieldSchema,
     fieldClass,
     layoutClass,
     handleChange,
@@ -17,8 +16,8 @@ export default function CheckboxInput(props) {
     fieldRefs
   } = props
 
-  const isColumnLayout = uiFieldSchema['ui:layout'] === 'column'
-  const { oneOf, enum: enumValues, enumNames } = field
+  const isColumnLayout = uiSchema['ui:layout'] === 'column'
+  const { oneOf, enum: enumValues, enumNames } = schema
   const currentValues = Array.isArray(formData[fieldName]) ? formData[fieldName] : []
 
   const renderEnumNamesOption = (enumValues, enumNames) => {
@@ -106,7 +105,7 @@ export default function CheckboxInput(props) {
       >
         {(enumNames && enumValues && renderEnumNamesOption(enumValues, enumNames)) ||
           (enumValues && renderEnumOptions(enumValues)) ||
-          (field?.items?.enum && renderEnumOptions(field?.items?.enum)) ||
+          (schema?.items?.enum && renderEnumOptions(schema?.items?.enum)) ||
           (oneOf && renderOneOfOptions(oneOf))}
       </div>
       {errors[fieldName] &&

@@ -8,7 +8,6 @@ export default function AltDateInput(props) {
     errors,
     title,
     field,
-    uiFieldSchema,
     layoutClass,
     fieldClass,
     handleChange,
@@ -16,10 +15,10 @@ export default function AltDateInput(props) {
     isRequired,
     showLabel
   } = props
-  const { yearsRange, format: dateFormat } = uiFieldSchema['ui:options'] || {}
+  const { yearsRange, format: dateFormat } = uiSchema['ui:options'] || {}
   const startYear = yearsRange ? yearsRange[0] : 1900
   const endYear = yearsRange ? yearsRange[1] : 2100
-  const isColumnLayout = uiFieldSchema['ui:layout'] === 'column'
+  const isColumnLayout = uiSchema['ui:layout'] === 'column'
 
   const handleChangeDatePart = (part, value) => {
     const updatedDate = { ...formData[fieldName] }

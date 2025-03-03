@@ -11,8 +11,6 @@ export default function DateInput(props) {
     formData,
     errors,
     title,
-    field,
-    uiFieldSchema,
     layoutClass,
     fieldClass,
     handleChange,
@@ -63,7 +61,7 @@ export default function DateInput(props) {
         ref={(element) => (fieldRefs.current[fieldName] = element)}
         value={value}
         onClick={onClick}
-        placeholder={uiFieldSchema['ui:placeholder'] || formatOfDate}
+        placeholder={uiSchema['ui:placeholder'] || formatOfDate}
         readOnly
       />
       {(!errors[fieldName] || errors[fieldName].length === 0) && (

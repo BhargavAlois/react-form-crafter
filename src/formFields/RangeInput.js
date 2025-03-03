@@ -7,8 +7,6 @@ export default function RangeInput(props) {
     formData,
     errors,
     title,
-    field,
-    uiFieldSchema,
     layoutClass,
     fieldClass,
     handleChange,
@@ -17,11 +15,11 @@ export default function RangeInput(props) {
     showLabel,
     fieldRefs
   } = props
-  const min = field.minimum || 0
-  const max = field.maximum || 100
-  const oneOf = field.oneOf
+  const min = schema.minimum || 0
+  const max = schema.maximum || 100
+  const oneOf = schema.oneOf
 
-  const defaultValue = field.default !== undefined && field.default !== null ? field.default : min
+  const defaultValue = schema.default !== undefined && schema.default !== null ? schema.default : min
   const rangeValue = formData[fieldName] || defaultValue
 
   return (
@@ -40,7 +38,7 @@ export default function RangeInput(props) {
         min={min}
         max={max}
         step="1"
-        placeholder={uiFieldSchema['ui:placeholder']}
+        placeholder={uiSchema['ui:placeholder']}
       />
       <div className="range-value">
         <span>{rangeValue}</span>

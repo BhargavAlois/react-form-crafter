@@ -11,8 +11,6 @@ export default function DateRangeInput(props) {
     formData,
     errors,
     title,
-    field,
-    uiFieldSchema,
     layoutClass,
     fieldClass,
     handleChange,
@@ -23,7 +21,7 @@ export default function DateRangeInput(props) {
   } = props
 
   const formatOfDate = uiSchema[fieldName]?.['ui:options']?.format || 'MM/dd/yyyy'
-  const isColumnLayout = uiFieldSchema['ui:layout'] === 'column'
+  const isColumnLayout = uiSchema['ui:layout'] === 'column'
 
   const handleDateRangeChange = (key, date) => {
     const updatedRange = {
@@ -82,7 +80,7 @@ export default function DateRangeInput(props) {
           dateFormat={formatOfDate}
           customInput={
             <CustomInput
-              placeholder={uiFieldSchema['ui:placeholder'] || 'Start Date'}
+              placeholder={uiSchema['ui:placeholder'] || 'Start Date'}
             />
           }
           portalId="custom-popper-start"
@@ -99,7 +97,7 @@ export default function DateRangeInput(props) {
           dateFormat={formatOfDate}
           customInput={
             <CustomInput
-              placeholder={uiFieldSchema['ui:placeholder'] || 'End Date'}
+              placeholder={uiSchema['ui:placeholder'] || 'End Date'}
             />
           }
           portalId="custom-popper-end"

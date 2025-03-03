@@ -7,8 +7,6 @@ export default function TextArea(props) {
     formData,
     errors,
     title,
-    field,
-    uiFieldSchema,
     layoutClass,
     fieldClass,
     handleChange,
@@ -17,8 +15,8 @@ export default function TextArea(props) {
     showLabel,
     fieldRefs
   } = props
-  const rows = uiFieldSchema?.['ui:options']?.rows
-  const cols = uiFieldSchema?.['ui:options']?.cols
+  const rows = uiSchema?.['ui:options']?.rows
+  const cols = uiSchema?.['ui:options']?.cols
 
   return (
     <div key={fieldName} className={`${layoutClass}`}>
@@ -34,7 +32,7 @@ export default function TextArea(props) {
         onChange={(e) => handleChange(fieldName, e.target.value)}
         rows={rows}
         cols={cols}
-        placeholder={uiFieldSchema['ui:placeholder']}
+        placeholder={uiSchema['ui:placeholder']}
       />
       {errors[fieldName] &&
         errors[fieldName].map((error, index) => (

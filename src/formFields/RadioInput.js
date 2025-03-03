@@ -7,8 +7,6 @@ export default function RadioInput(props) {
     formData,
     errors,
     title,
-    field,
-    uiFieldSchema,
     fieldClass,
     layoutClass,
     handleChange,
@@ -18,8 +16,8 @@ export default function RadioInput(props) {
     fieldRefs
   } = props
 
-  const { oneOf, enum: enumValues, enumNames } = field
-  const isColumnLayout = uiFieldSchema['ui:layout'] === 'column'
+  const { oneOf, enum: enumValues, enumNames } = schema
+  const isColumnLayout = uiSchema['ui:layout'] === 'column'
 
   const renderEnumNamesOption = (enumValues, enumNames) => {
     return enumValues.map((value, index) => (
@@ -86,7 +84,7 @@ export default function RadioInput(props) {
       <div className={`form-check ${isColumnLayout ? 'd-flex flex-column' : 'd-flex flex-row'}`}>
         {(enumNames && enumValues && renderEnumNamesOption(enumValues, enumNames)) ||
           (enumValues && renderEnumOptions(enumValues)) ||
-          (field?.items?.enum && renderEnumOptions(field?.items?.enum)) ||
+          (schema?.items?.enum && renderEnumOptions(schema?.items?.enum)) ||
           (oneOf && renderOneOfOptions(oneOf))}
       </div>
       {errors[fieldName] &&

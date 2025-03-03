@@ -7,8 +7,6 @@ export default function TimeInput(props) {
     formData,
     errors,
     title,
-    field,
-    uiFieldSchema,
     layoutClass,
     fieldClass,
     handleChange,
@@ -29,7 +27,7 @@ export default function TimeInput(props) {
         value={formData[fieldName] || ''}
         onChange={(e) => handleChange(fieldName, e.target.value)}
         className={`${fieldClass} ${errors[fieldName] ? 'is-invalid' : ''}`}
-        placeholder={uiFieldSchema['ui:placeholder']}
+        placeholder={uiSchema['ui:placeholder']}
       />
       {errors[fieldName] &&
         errors[fieldName].map((error, index) => (
