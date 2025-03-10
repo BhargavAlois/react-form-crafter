@@ -22,11 +22,13 @@ const MyForm = forwardRef((props, ref) => {
     defaultData.current = initializeDefaultData()
     isInitialized.current = true
   }
-  const [formData, setFormData] = useState(flattenData({...defaultData.current, ...prefilledFormData} || {}));
+  const [formData, setFormData] = useState(
+    flattenData({ ...defaultData.current, ...prefilledFormData } || {}, schema),
+  )
   const [errors, setErrors] = useState({})
   const templates = props?.templates
   const templateName = uiSchema?.['template']
-  const fieldRefs = useRef({});    // To focus the input fields which are empty when performing validation
+  const fieldRefs = useRef({}) // To focus the input fields which are empty when performing validation
 
   let MyTemplate
   if (templateName) {
@@ -38,65 +40,68 @@ const MyForm = forwardRef((props, ref) => {
   //   return parts[parts.length - 1] // Return the last part of the path
   // }
 
+  const getDeepValue = (obj, path) => {
+    return path.split('.').reduce((acc, part) => acc && acc[part], obj)
+  }
+
   const normalizeData = async (schema, data, uiSchema = {}) => {
     const processProperties = async (schemaProperties, inputData, parentKey = '') => {
-      const result = {};
-  
+      const result = {}
+
       for (const [key, value] of Object.entries(inputData || {})) {
-        const fieldSchema = schemaProperties?.[key];
-  
-        if (fieldSchema?.type === "object" && fieldSchema.properties) {
+        const fieldSchema = schemaProperties?.[key]
+
+        if (fieldSchema?.type === 'object' && fieldSchema.properties) {
           // Recursively process nested objects, preserving structure
           result[key] = await processProperties(
             fieldSchema.properties,
             value,
-            `${parentKey}${key}.`
-          );
-        } else if (fieldSchema?.type === "string" && fieldSchema.format === "date") {
+            `${parentKey}${key}.`,
+          )
+        } else if (fieldSchema?.type === 'string' && fieldSchema.format === 'date') {
           // Handle date formatting based on UI schema
-          const fieldUiSchema = uiSchema[`${parentKey}${key}`] || {};
+          const fieldUiSchema = getDeepValue(uiSchema, `${parentKey}${key}`) || {}
           const displayFormat =
-            fieldUiSchema?.["ui:options"]?.format ||
-            fieldUiSchema?.["ui-options"]?.format ||
-            "yyyy-MM-dd";
-  
+            fieldUiSchema?.['ui:options']?.format ||
+            fieldUiSchema?.['ui-options']?.format ||
+            'yyyy-MM-dd'
+
           try {
-            result[key] = format(parseISO(value), displayFormat);
+            result[key] = format(parseISO(value), displayFormat)
           } catch {
-            result[key] = value; // Fallback to raw value if formatting fails
+            result[key] = value // Fallback to raw value if formatting fails
           }
         } else {
           // Directly assign other fields
-          result[key] = value;
+          result[key] = value
         }
       }
-  
-      return result;
-    };
-  
-    // Call the recursive processor
-    return processProperties(schema?.properties, data);
-  };
+      return result
+    }
 
-  function flattenData(data) {
-    const result = {};
-  
-    function flatten(obj, parentKey = "") {
+    // Call the recursive processor
+    return processProperties(schema?.properties, data)
+  }
+
+  function flattenData(data, schema) {
+    const result = {}
+    function flatten(obj, parentKey = '', schema) {
       for (const key in obj) {
         if (obj.hasOwnProperty(key)) {
-          const newKey = parentKey ? `${parentKey}.${key}` : key;
-  
-          if (typeof obj[key] === "object" && !Array.isArray(obj[key])) {
-            flatten(obj[key], newKey);
+          const newKey = parentKey ? `${parentKey}.${key}` : key
+          const fieldSchema = schema?.properties?.[key]
+
+          if (fieldSchema?.type === 'object' && typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
+            flatten(obj[key], newKey, fieldSchema)
           } else {
-            result[newKey] = obj[key];
+            result[newKey] = obj[key]
           }
         }
       }
     }
-  
-    flatten(data);
-    return result;
+
+    flatten(data, '', schema)
+    return result
   }
 
   function initializeDefaultData() {
@@ -124,30 +129,30 @@ const MyForm = forwardRef((props, ref) => {
   }
 
   const convertToNestedStructure = (dottedData) => {
-    const nestedData = {};
-  
+    const nestedData = {}
+
     Object.entries(dottedData).forEach(([key, value]) => {
-      const keys = key.split("."); // Split the dotted key into parts
-      let current = nestedData;
-  
+      const keys = key.split('.') // Split the dotted key into parts
+      let current = nestedData
+
       keys.forEach((part, index) => {
         if (!current[part]) {
           // Create a nested object if it doesn't exist
-          current[part] = {};
+          current[part] = {}
         }
-  
+
         // If it's the last key, assign the value
         if (index === keys.length - 1) {
-          current[part] = value;
+          current[part] = value
         }
-  
+
         // Move deeper into the nested structure
-        current = current[part];
-      });
-    });
-  
-    return nestedData;
-  };  
+        current = current[part]
+      })
+    })
+
+    return nestedData
+  }
 
   useEffect(() => {
     if (!isInitialized.current) {
@@ -157,10 +162,10 @@ const MyForm = forwardRef((props, ref) => {
 
     const processPrefilledData = async () => {
       const mergedData = { ...defaultData.current, ...prefilledFormData }
-      const normalizedData = (await normalizeData(schema, mergedData, uiSchema));
+      const normalizedData = await normalizeData(schema, mergedData, uiSchema)
       //Convert merged data to the format : formData.info.firstName=value;
-      const flatData = flattenData(normalizedData); //Converting data into dotted notation
-      setFormData(flatData);
+      const flatData = flattenData(normalizedData, schema) //Converting data into dotted notation
+      setFormData(flatData)
     }
 
     processPrefilledData()
@@ -285,13 +290,12 @@ const MyForm = forwardRef((props, ref) => {
       }
 
       //array validations
-      if(value && fieldSchema.type === 'array')
-      {
+      if (value && fieldSchema.type === 'array') {
         if (Array.isArray(value)) {
-          const hasEmptyField = value.some((item) => !item || item === '');
-      
+          const hasEmptyField = value.some((item) => !item || item === '')
+
           if (hasEmptyField) {
-            errors.push(`One or more fields in the ${fieldTitle} are empty.`);
+            errors.push(`One or more fields in the ${fieldTitle} are empty.`)
           }
         }
       }
@@ -319,13 +323,13 @@ const MyForm = forwardRef((props, ref) => {
         }
 
         if (uiOptions.size && fileSize) {
-          const maxSizeInBytes = uiOptions.size * 1024 * 1024;
+          const maxSizeInBytes = uiOptions.size * 1024 * 1024
           if (fileSize > maxSizeInBytes) {
             errors.push(
               `The selected file size (${(fileSize / (1024 * 1024)).toFixed(
-                2
-              )} MB) exceeds the maximum allowed size of ${uiOptions.size} MB.`
-            );
+                2,
+              )} MB) exceeds the maximum allowed size of ${uiOptions.size} MB.`,
+            )
           }
         }
       }
@@ -358,15 +362,15 @@ const MyForm = forwardRef((props, ref) => {
     setErrors(formErrors)
 
     if (Object.keys(formErrors).length > 0) {
-      const firstErrorField = Object.keys(formErrors)[0];
-      const fieldElement = fieldRefs.current[firstErrorField];
+      const firstErrorField = Object.keys(formErrors)[0]
+      const fieldElement = fieldRefs.current[firstErrorField]
       if (fieldElement) {
-        fieldElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        fieldElement.focus();
+        fieldElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        fieldElement.focus()
       }
-      return false;
+      return false
     }
-    
+
     return Object.keys(formErrors).length === 0
   }
 
@@ -415,11 +419,9 @@ const MyForm = forwardRef((props, ref) => {
   }
 
   const handleReset = (event) => {
-    console.log("Inside handle reset")
-    setFormData({});
-    if(onReset)
-    {
-      onReset(event);
+    setFormData({})
+    if (onReset) {
+      onReset(event)
     }
   }
 
@@ -466,19 +468,16 @@ const MyForm = forwardRef((props, ref) => {
     }))
   }
 
-  useImperativeHandle(
-    ref,
-    () => ({handleSubmit, handleReset})
-  )
+  useImperativeHandle(ref, () => ({ handleSubmit, handleReset }))
 
   const submitBtnOptions = {
     ...uiSchema?.['ui:submitButtonOptions'],
   }
 
-  const resetBtnOptions={
+  const resetBtnOptions = {
     ...uiSchema?.['ui:resetButtonOptions'],
   }
-  
+
   const requiredFields = getRequiredFields(schema)
 
   const content = (
@@ -524,6 +523,6 @@ const MyForm = forwardRef((props, ref) => {
       resetBtnOptions={resetBtnOptions}
     />
   )
-});
+})
 
-export default MyForm;
+export default MyForm
